@@ -8,7 +8,7 @@
       Root (sys "LAMBDA_TASK_ROOT")
       Api (sys "AWS_LAMBDA_RUNTIME_API")
       Temp (in '(mktemp) (till "^J" T))
-      Url (pack "https://" Api "/2018-06-01/runtime/invocation/next")
+      Url (pack "http://" Api "/2018-06-01/runtime/invocation/next")
       Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
                    "-X" "GET" Url ) )
       EventData (in Curl (till NIL T)))
@@ -21,8 +21,7 @@
 
 # Run it
    (load (pack Root "/" Script ".l"))
-
-   (setq Response ((intern (pack Function)) EventData))
+   (setq Response (eval (append (str (pack Function)) (list EventData))))
 
    (prinl "Response: " Response)
 # return response to http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQUEST_ID/response
