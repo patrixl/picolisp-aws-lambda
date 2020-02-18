@@ -1,0 +1,36 @@
+#!./pil/bin/picolisp ./pil/lib.l
+
+(load "@lib/misc.l" "@lib/http.l")
+
+(let (Runtime (sys "AWS_LAMBDA_RUNTIME_API")
+      Script (pipe (prin (sys "_HANDLER")) (till "." T))
+      Function (pipe (prin (sys "_HANDLER")) (from ".") (till T))
+      Root (sys "LAMBDA_TASK_ROOT")
+      Api (sys "AWS_LAMBDA_RUNTIME_API")
+      Temp (in '(mktemp) (till "^J" T))
+      Url (pack "https://" Api "/2018-06-01/runtime/invocation/next")
+      Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
+                   "-X" "GET" Url ) )
+      EventData (in Curl (till NIL T)))
+
+   (prinl "Headers are in: " Temp)
+
+# get headers from GET https://$AWS_LAMBDA_RUNTIME_API/2018-06-01/runtime/invocation/next
+# and EventData from that same request
+# get Lambda-Runtime-Aws-Request-Id header value -> request ID
+
+# Run it
+   (load (pack Root "/" Script ".l"))
+
+   (setq Response ((intern (pack Function)) EventData))
+
+   (prinl "Response: " Response)
+# return response to http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQUEST_ID/response
+# as JSON data of course?
+
+# error handling, context info, etc????
+# https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html#runtimes-custom-build
+
+   (call 'rm Temp) )
+
+(bye)
