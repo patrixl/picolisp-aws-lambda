@@ -2,29 +2,54 @@
 
 (load "@lib/misc.l" "@lib/http.l")
 
+(setq *Handler (sys "_HANDLER")
+   *Region  (sys "AWS_REGION")
+   *AwsExecutionEnv  (sys "AWS_EXECUTION_ENV")
+   *AwsFunctionName  (sys "AWS_LAMBDA_FUNCTION_NAME")
+   *AwsLambdaFunctionMemorySize  (sys "AWS_LAMBDA_FUNCTION_MEMORY_SIZE")
+   *AwsLambdaFunctionVersion  (sys "AWS_LAMBDA_FUNCTION_VERSION")
+   *AwsLogGroupName  (sys "AWS_LAMBDA_LOG_GROUP_NAME")
+   *AwsLogStreamName  (sys "AWS_LAMBDA_LOG_STREAM_NAME")
+   *AwsAccessKeyId  (sys "AWS_ACCESS_KEY_ID")
+   *AwsSecretAccessKey  (sys "AWS_SECRET_ACCESS_KEY")
+   *AwsSessionToken  (sys "AWS_SESSION_TOKEN")
+   *LambdaTaskRoot  (sys "LAMBDA_TASK_ROOT")
+   *LambdaRuntimeDir  (sys "LAMBDA_RUNTIME_DIR")
+   *AwsLambdaRuntimeApi  (sys "AWS_LAMBDA_RUNTIME_API")
+   *Tz  (sys "TZ")
+
+   *Lang (sys "LANG")
+   *Path (sys "PATH")
+   *LdLibraryPath (sys "LD_LIBRARY_PATH") )
+
+(de *Err
+   (prinl "Error at: " (str ^)) )
+
 (loop
-   (let (Runtime (sys "AWS_LAMBDA_RUNTIME_API")
-      Script (car (mapcar pack (split (chop (sys "_HANDLER")) ".")))
-      Function (cadr (mapcar pack (split (chop (sys "_HANDLER")) ".")))
-      Root (sys "LAMBDA_TASK_ROOT")
-      Api (sys "AWS_LAMBDA_RUNTIME_API")
-      Temp (in '(mktemp) (till "^J" T))
-      Url (pack "http://" Api "/2018-06-01/runtime/invocation/next")
-      Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
-                   "-X" "GET" Url ) )
-      EventData (in Curl (till NIL T))
-      Headers (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J"))
-      Request (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)))
+   (cd *LambdaTaskRoot)
 
-      (load (pack Root "/" Script ".l"))
-      (setq Response (eval (append (str (pack Function)) (list EventData))))
-      (prinl "Response: " Response)
+   (let (Script (car (mapcar pack (split (chop *Handler) ".")))
+         Function (cadr (mapcar pack (split (chop *Handler) ".")))
+         Temp (in '(mktemp) (till "^J" T))
+         Url (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/next")
+         Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
+                       "-X" "GET" Url ) )
+         EventData (in Curl (till NIL T))
+         Headers (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J"))
+         Request (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers))
+         Error (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST"
+                        (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" Request "/error")
+                        "-d" "Unhandled") ) )
 
-      (setq Url (pack "http://" Api "/2018-06-01/runtime/invocation/" Request "/response"))
-      (setq Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST" Url "-d" Response ) ))
-      (in Curl (till NIL T))
+      (finally
+         (call 'rm Temp)
 
-      (call 'rm Temp) ) )
+         (load (pack *LambdaTaskRoot "/" Script ".l"))
+         (setq Response (eval (append (str (pack Function)) (list EventData))))
+
+         (setq Url (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" Request "/response"))
+         (setq Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST" Url "-d" Response)))
+         (in Curl (till NIL T)) ) ) )
 
       # error handling, context info, etc????
       # https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html#runtimes-custom-build
