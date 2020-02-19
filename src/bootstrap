@@ -1,4 +1,4 @@
-#!./pil/bin/picolisp ./pil/lib.l
+#!/opt/pil/bin/picolisp /opt/pil/lib.l
 
 (load "@lib/misc.l" "@lib/http.l")
 
@@ -22,7 +22,7 @@
    *Path (sys "PATH")
    *LdLibraryPath (sys "LD_LIBRARY_PATH")
 
-   *RequestId NIL)
+   *RequestId NIL )
 
 (de *Err
    (prinl "Error at: " (str ^))
