@@ -12,6 +12,9 @@ docker build -t picolisp-aws-lambda ./build && \
 	cp -a src/bootstrap $dir && \
 	sudo mv $dir/build/pil $dir/ && \
 	cd $dir && \
+        git clone --depth 1 https://github.com/aw/picolisp-json && \
+        git clone --depth 1 https://github.com/aw/picolisp-awscurl && \
+        sudo cp picolisp-json/json.l picolisp-awscurl/libawscurl.l pil/ && \
 	zip -r picolisp.zip pil bootstrap && \
 	cd - && \
 	mv $dir/picolisp.zip .

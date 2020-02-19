@@ -50,7 +50,7 @@
          (call 'rm Temp)
 
          (load (pack *LambdaTaskRoot "/" Script ".l"))
-         (setq Response (eval (append (str (pack Function)) (list EventData Headers))))
+         (setq Response (eval (append (str (pack Function)) (list EventData) Headers)))
 
          (setq Url (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" *RequestId "/response"))
          (setq Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST" Url "-d" Response)))
