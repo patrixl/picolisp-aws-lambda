@@ -20,10 +20,17 @@
 
    *Lang (sys "LANG")
    *Path (sys "PATH")
-   *LdLibraryPath (sys "LD_LIBRARY_PATH") )
+   *LdLibraryPath (sys "LD_LIBRARY_PATH")
+
+   *RequestId NIL)
 
 (de *Err
-   (prinl "Error at: " (str ^)) )
+   (prinl "Error at: " (str ^))
+   (let (Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST"
+                       (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" *RequestId "/error")
+                       "-d" (pack "{'errorMessage': 'Error at: " (str ^)
+                               "', 'errorType': 'Runtime'}" ) "--header" "Lambda-Runtime-Function-Error-Type: Runtime" ) ) )
+      (in Curl (till NIL T)) ) )
 
 (loop
    (cd *LambdaTaskRoot)
@@ -35,23 +42,18 @@
          Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
                        "-X" "GET" Url ) )
          EventData (in Curl (till NIL T))
-         Headers (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J"))
-         Request (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers))
-         Error (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST"
-                        (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" Request "/error")
-                        "-d" "Unhandled") ) )
+         Headers (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J")) )
+
+      (setq *RequestId (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)) )
 
       (finally
          (call 'rm Temp)
 
          (load (pack *LambdaTaskRoot "/" Script ".l"))
-         (setq Response (eval (append (str (pack Function)) (list EventData))))
+         (setq Response (eval (append (str (pack Function)) (list EventData Headers))))
 
-         (setq Url (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" Request "/response"))
+         (setq Url (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" *RequestId "/response"))
          (setq Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST" Url "-d" Response)))
          (in Curl (till NIL T)) ) ) )
-
-      # error handling, context info, etc????
-      # https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html#runtimes-custom-build
 
 (bye)
