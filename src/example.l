@@ -1,5 +1,5 @@
 # Load aw's json and awscurl libraries
-(load "@json.l" "@libawscurl.l")
+(load "@json/json.l" "@awscurl/libawscurl.l")
 
 (de main (EventData . Headers)
    (println (json-decode "{\"Hello\":\"World\"}"))
