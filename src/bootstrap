@@ -1,58 +1,59 @@
 #!/opt/pil/bin/picolisp /opt/pil/lib.l
 
-(load "@lib/misc.l" "@lib/http.l")
+(load "@lib/misc.l" "@lib/http.l" "@json/json.l" "@awscurl/libawscurl.l")
+
 
 (setq *Handler (sys "_HANDLER")
-   *Region  (sys "AWS_REGION")
-   *AwsExecutionEnv  (sys "AWS_EXECUTION_ENV")
-   *AwsFunctionName  (sys "AWS_LAMBDA_FUNCTION_NAME")
-   *AwsLambdaFunctionMemorySize  (sys "AWS_LAMBDA_FUNCTION_MEMORY_SIZE")
-   *AwsLambdaFunctionVersion  (sys "AWS_LAMBDA_FUNCTION_VERSION")
-   *AwsLogGroupName  (sys "AWS_LAMBDA_LOG_GROUP_NAME")
-   *AwsLogStreamName  (sys "AWS_LAMBDA_LOG_STREAM_NAME")
-   *AwsAccessKeyId  (sys "AWS_ACCESS_KEY_ID")
-   *AwsSecretAccessKey  (sys "AWS_SECRET_ACCESS_KEY")
-   *AwsSessionToken  (sys "AWS_SESSION_TOKEN")
-   *LambdaTaskRoot  (sys "LAMBDA_TASK_ROOT")
-   *LambdaRuntimeDir  (sys "LAMBDA_RUNTIME_DIR")
-   *AwsLambdaRuntimeApi  (sys "AWS_LAMBDA_RUNTIME_API")
+   *Aws_region  (sys "AWS_REGION")
+   *Aws_execution_env  (sys "AWS_EXECUTION_ENV")
+   *Aws_function_name  (sys "AWS_LAMBDA_FUNCTION_NAME")
+   *Aws_lambda_function_memory_size  (sys "AWS_LAMBDA_FUNCTION_MEMORY_SIZE")
+   *Aws_lambda_function_version  (sys "AWS_LAMBDA_FUNCTION_VERSION")
+   *Aws_loggroup_name  (sys "AWS_LAMBDA_LOG_GROUP_NAME")
+   *Aws_logstream_name  (sys "AWS_LAMBDA_LOG_STREAM_NAME")
+   *Aws_access_key  (sys "AWS_ACCESS_KEY_ID")
+   *Aws_secret_key  (sys "AWS_SECRET_ACCESS_KEY")
+   *Aws_session_token  (sys "AWS_SESSION_TOKEN")
+   *Lambda_task_root  (sys "LAMBDA_TASK_ROOT")
+   *Lambda_runtime_dir  (sys "LAMBDA_RUNTIME_DIR")
+   *Aws_lambda_runtime_api  (sys "AWS_LAMBDA_RUNTIME_API")
    *Tz  (sys "TZ")
 
    *Lang (sys "LANG")
    *Path (sys "PATH")
-   *LdLibraryPath (sys "LD_LIBRARY_PATH")
+   *Ld_library_path (sys "LD_LIBRARY_PATH")
 
-   *RequestId NIL )
+   *Request_id NIL )
 
 (de *Err
    (prinl "Error at: " (str ^))
    (let (Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST"
-                       (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" *RequestId "/error")
+                       (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/error")
                        "-d" (pack "{'errorMessage': 'Error at: " (str ^)
                                "', 'errorType': 'Runtime'}" ) "--header" "Lambda-Runtime-Function-Error-Type: Runtime" ) ) )
       (in Curl (till NIL T)) ) )
 
 (loop
-   (cd *LambdaTaskRoot)
+   (cd *Lambda_task_root)
 
    (let (Script (car (mapcar pack (split (chop *Handler) ".")))
          Function (cadr (mapcar pack (split (chop *Handler) ".")))
          Temp (in '(mktemp) (till "^J" T))
-         Url (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/next")
+         Url (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/next")
          Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
                        "-X" "GET" Url ) )
-         EventData (in Curl (till NIL T))
+         Event_data (in Curl (till NIL T))
          Headers (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J")) )
 
-      (setq *RequestId (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)) )
+      (setq *Request_id (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)) )
 
       (finally
          (call 'rm Temp)
 
-         (load (pack *LambdaTaskRoot "/" Script ".l"))
-         (setq Response (eval (append (str (pack Function)) (list EventData) Headers)))
+         (load (pack *Lambda_task_root "/" Script ".l"))
+         (setq Response (eval (append (str (pack Function)) (list Event_data) Headers)))
 
-         (setq Url (pack "http://" *AwsLambdaRuntimeApi "/2018-06-01/runtime/invocation/" *RequestId "/response"))
+         (setq Url (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/response"))
          (setq Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST" Url "-d" Response)))
          (in Curl (till NIL T)) ) ) )
 
