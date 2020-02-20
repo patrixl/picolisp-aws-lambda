@@ -1,0 +1,21 @@
+#+AUTHOR: Patrice LaFlamme <patrix@patrix.org>
+#+DATE: <2020-02-19 水>
+#+TITLE: PicoLisp AWS Lambda Runtime
+
+* About
+
+Creates a custom runtime for AWS Lambda allowing you to run PicoLisp functions in AWS Lambda. For convenience, aw's picolisp-json and picolisp-awscurl are included.
+
+
+
+* Requirements
+
+* Usage
+
+* Building
+
+* Deploying
+
+* Contributing
+
+* Thanks

@@ -1,4 +1,4 @@
-(de main (Event_data . Headers)
+(de main (Event_data Headers)
    (println (json-decode "{\"Hello\":\"World\"}"))
    (prinl (json-encode '(("Hello" . "World"))))
    (let (*Aws_region "us-east-1" # temp override the region

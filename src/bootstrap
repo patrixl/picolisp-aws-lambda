@@ -43,7 +43,7 @@
          Url (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/next")
          Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
                        "-X" "GET" Url ) )
-         Event_data (in Curl (till NIL T))
+         Event_data (json-decode (in Curl (till NIL T)))
          Headers (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J")) )
 
       (setq *Request_id (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)) )
@@ -52,7 +52,7 @@
          (call 'rm Temp)
 
          (load (pack *Lambda_task_root "/" Script ".l"))
-         (setq Response (eval (append (str (pack Function)) (list Event_data) Headers)))
+         (setq Response (eval (append (str (pack Function)) (quote Event_data) (quote Headers))))
 
          (setq Url (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/response"))
          (setq Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST" Url "-d" Response)))
