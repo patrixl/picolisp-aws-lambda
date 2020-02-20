@@ -31,7 +31,8 @@
       (let (Curl (make
                     (link 'curl "--silent" "--show-error" "--location" "-X" "POST"
                        (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/error")
-                       "-d" (pack "{'errorMessage': 'Error at: " (str ^) "', 'errorType': 'Runtime'}" )
+                       "-d" (json-encode (list (cons "errorMessage" (pack "Error at: " (str ^)))
+                                            (cons "errorType" "Runtime") ) )
                        "--header" "Lambda-Runtime-Function-Error-Type: Runtime" ) ) )
          (in Curl (till NIL T)) ) )
 
