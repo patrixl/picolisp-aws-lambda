@@ -1,4 +1,4 @@
-#!/opt/pil/bin/picolisp /opt/pil/lib.l
+#!/opt/picoLisp/bin/picolisp /opt/picoLisp/lib.l
 
 (load "@lib/misc.l" "@lib/http.l" "@json/json.l" "@awscurl/libawscurl.l")
 
