@@ -3,7 +3,7 @@
 echo -n "Creating temp directory... "
 home=$PWD
 echo $home
-dir=$(mktemp --directory)
+dir=$(mktemp -d)
 echo $dir
 
 echo "Building..."
