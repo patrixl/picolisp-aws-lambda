@@ -1,4 +1,5 @@
-(setq *Handler (sys "_HANDLER")
+(de init ()
+   (setq *Handler (sys "_HANDLER")
       *Aws_region  (sys "AWS_REGION")
       *Aws_execution_env  (sys "AWS_EXECUTION_ENV")
       *Aws_function_name  (sys "AWS_LAMBDA_FUNCTION_NAME")
@@ -18,7 +19,7 @@
       *Path (sys "PATH")
       *Ld_library_path (sys "LD_LIBRARY_PATH")
 
-      *Request_id NIL )
+      *Request_id NIL ) )
 
 (de *Err
    (prinl "Error at: " (str ^))

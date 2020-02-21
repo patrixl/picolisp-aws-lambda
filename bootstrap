@@ -24,5 +24,6 @@
             (send-response (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/response")
                (eval-function Function Event_data Headers) ) ) ) ) )
 
+(init)
 (main)
 (bye)
