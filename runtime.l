@@ -1,4 +1,26 @@
-(de send-error-response
+(setq *Handler (sys "_HANDLER")
+      *Aws_region  (sys "AWS_REGION")
+      *Aws_execution_env  (sys "AWS_EXECUTION_ENV")
+      *Aws_function_name  (sys "AWS_LAMBDA_FUNCTION_NAME")
+      *Aws_lambda_function_memory_size  (sys "AWS_LAMBDA_FUNCTION_MEMORY_SIZE")
+      *Aws_lambda_function_version  (sys "AWS_LAMBDA_FUNCTION_VERSION")
+      *Aws_loggroup_name  (sys "AWS_LAMBDA_LOG_GROUP_NAME")
+      *Aws_logstream_name  (sys "AWS_LAMBDA_LOG_STREAM_NAME")
+      *Aws_access_key  (sys "AWS_ACCESS_KEY_ID")
+      *Aws_secret_key  (sys "AWS_SECRET_ACCESS_KEY")
+      *Aws_session_token  (sys "AWS_SESSION_TOKEN")
+      *Lambda_task_root  (sys "LAMBDA_TASK_ROOT")
+      *Lambda_runtime_dir  (sys "LAMBDA_RUNTIME_DIR")
+      *Aws_lambda_runtime_api  (sys "AWS_LAMBDA_RUNTIME_API")
+      *Tz  (sys "TZ")
+
+      *Lang (sys "LANG")
+      *Path (sys "PATH")
+      *Ld_library_path (sys "LD_LIBRARY_PATH")
+
+      *Request_id NIL )
+
+(de *Err
    (prinl "Error at: " (str ^))
       (let (Curl (make
                     (link 'curl "--silent" "--show-error" "--location" "-X" "POST"
