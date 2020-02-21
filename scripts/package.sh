@@ -6,7 +6,7 @@ echo $dir
 
 echo "Building..."
 docker build -t picolisp-aws-lambda . && \
-	docker run --rm -it -v $dir:/build picolisp-aws-lambda && \
+	docker run --rm -v $dir:/build picolisp-aws-lambda && \
 	cp $dir/picolisp.zip .
 
 echo "Cleaning up..."
