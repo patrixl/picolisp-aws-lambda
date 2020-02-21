@@ -7,6 +7,7 @@ RUN mkdir picoLisp/json picoLisp/awscurl
 RUN cp picolisp-json/json.l picolisp-json/LICENSE picoLisp/json/
 RUN cp picolisp-awscurl/libawscurl.l picolisp-awscurl/LICENSE picoLisp/awscurl/
 COPY bootstrap /
-RUN zip -r /picolisp.zip picoLisp/bin picoLisp/lib picoLisp/json picoLisp/awscurl picoLisp/*.l picoLisp/COPYING bootstrap
+COPY runtime.l /picoLisp/
+RUN zip -r /picolisp.zip picoLisp/bin picoLisp/lib picoLisp/json picoLisp/awscurl picoLisp/*.l picoLisp/COPYING picoLisp/runtime.l bootstrap
 
 ENTRYPOINT ["mv", "/picolisp.zip", "/build/"]

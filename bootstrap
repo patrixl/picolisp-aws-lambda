@@ -1,10 +1,8 @@
 #!/opt/picoLisp/bin/picolisp /opt/picoLisp/lib.l
 
-(load "@lib/misc.l" "@lib/http.l" "@json/json.l" "@awscurl/libawscurl.l")
+(load "@lib/misc.l" "@lib/http.l" "@json/json.l" "@awscurl/libawscurl.l" "@runtime.l")
 
-
-(loop
-   (setq *Handler (sys "_HANDLER")
+(setq *Handler (sys "_HANDLER")
       *Aws_region  (sys "AWS_REGION")
       *Aws_execution_env  (sys "AWS_EXECUTION_ENV")
       *Aws_function_name  (sys "AWS_LAMBDA_FUNCTION_NAME")
@@ -26,37 +24,28 @@
 
       *Request_id NIL )
 
-   (de *Err
-      (prinl "Error at: " (str ^))
-      (let (Curl (make
-                    (link 'curl "--silent" "--show-error" "--location" "-X" "POST"
-                       (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/error")
-                       "-d" (json-encode (list (cons "errorMessage" (pack "Error at: " (str ^)))
-                                            (cons "errorType" "Runtime") ) )
-                       "--header" "Lambda-Runtime-Function-Error-Type: Runtime" ) ) )
-         (in Curl (till NIL T)) ) )
+# When an error occurs, print it out and notify the runtime API
+(de *Err send-error-response)
 
-   (cd *Lambda_task_root)
+(de main ()
+   (loop
+      (cd *Lambda_task_root)
 
-   (let (Script (car (mapcar pack (split (chop *Handler) ".")))
-         Function (cadr (mapcar pack (split (chop *Handler) ".")))
-         Temp (in '(mktemp) (till "^J" T))
-         Url (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/next")
-         Curl (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp
-                       "-X" "GET" Url ) )
-         Event_data (json-decode (in Curl (till NIL T)))
-         Headers (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J")) )
+      (let (Script (pack *Lambda_task_root "/" (car (mapcar pack (split (chop *Handler) "."))) ".l")
+            Function (cadr (mapcar pack (split (chop *Handler) ".")))
+            Temp (in '(mktemp) (till "^J" T))
+            Event_data (get-event-data (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/next") Temp)
+            Headers (parse-headers Temp) )
 
-      (setq *Request_id (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)) )
+         (setq *Request_id (get-request-id Headers))
 
-      (finally
-         (call 'rm Temp)
+         (finally
+            (call 'rm Temp)
 
-         (load (pack *Lambda_task_root "/" Script ".l"))
-         (setq Response (eval (append (str (pack Function)) (quote Event_data) (quote Headers))))
+            # Load script, run the function and send the response to the runtime API
+            (load Script)
+            (send-response (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/response")
+               (eval-function Function Event_data Headers) ) ) ) ) )
 
-         (setq Url (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/response"))
-         (setq Curl (make (link 'curl "--silent" "--show-error" "--location" "-X" "POST" Url "-d" Response)))
-         (in Curl (till NIL T)) ) ) )
-
+(main)
 (bye)
