@@ -10,7 +10,7 @@
 
       (let (Script (pack *Lambda_task_root "/" (car (mapcar pack (split (chop *Handler) "."))) ".l")
             Function (cadr (mapcar pack (split (chop *Handler) ".")))
-            Temp (in '(mktemp) (till "^J" T))
+            Temp (make-temp)
             Event_data (get-event-data (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/next") Temp)
             Headers (parse-headers Temp) )
 

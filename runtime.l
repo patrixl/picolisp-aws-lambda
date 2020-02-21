@@ -31,6 +31,9 @@
                        "--header" "Lambda-Runtime-Function-Error-Type: Runtime" ) ) )
          (in Curl (till NIL T)) ) )
 
+(de make-temp ()
+   (in '(mktemp) (till "^J" T)) )
+
 (de get-event-data (Url Temp)
    (json-decode
       (in (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp "-X" "GET" Url ) )
