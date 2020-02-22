@@ -5,4 +5,5 @@
          *Aws_query  "Action=DescribeRegions&Version=2013-10-15" )
       (prinl (awscurl-start)) )
    (prin "Headers: ") (println Headers)
-   (prin "Event_data: ") (println Event_data) )
+   (prin "Event_data: ") (println Event_data)
+   (json-encode Event_data) )
