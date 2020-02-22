@@ -8,7 +8,7 @@
    (loop
       (cd *Lambda_task_root)
 
-      (let (Script (get-script-name *Aws_lambda_task_root *Handler)
+      (let (Script (get-script-name *Lambda_task_root *Handler)
             Function (get-function-name *Handler)
             Temp (make-temp)
             Event_data (get-event-data (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/next") Temp)
