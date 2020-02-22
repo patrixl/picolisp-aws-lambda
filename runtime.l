@@ -1,4 +1,4 @@
-(de init ()
+(de init-runtime ()
    (setq *Handler (sys "_HANDLER")
       *Aws_region  (sys "AWS_REGION")
       *Aws_execution_env  (sys "AWS_EXECUTION_ENV")
@@ -39,8 +39,15 @@
       (in (make (link 'curl "--silent" "--show-error" "--location" "--dump-header" Temp "-X" "GET" Url ) )
          (till NIL T) ) ) )
 
-(de parse-headers (Temp)
-   (mapcar '((L) (mapcar '((A) (pack (clip A))) (split L ":"))) (split (chop (in Temp (till NIL T))) "^J")) )
+(de parse-headers (Raw)
+   (mapcar '((L) (mapcar '((E) (pack (clip E))) (split L ":") ) )
+      (split (chop Raw) "^J") ) )
+
+(de get-script-name (Root Handler)
+   (pack Root "/" (car (mapcar pack (split (chop Handler) "."))) ".l") )
+
+(de get-function-name (Handler)
+   (cadr (mapcar pack (split (chop Handler) "."))))
 
 (de eval-function (Function Event_data Headers)
    (eval (append (str (pack Function)) (quote Event_data) (quote Headers))) )

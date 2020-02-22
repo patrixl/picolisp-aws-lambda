@@ -8,11 +8,11 @@
    (loop
       (cd *Lambda_task_root)
 
-      (let (Script (pack *Lambda_task_root "/" (car (mapcar pack (split (chop *Handler) "."))) ".l")
-            Function (cadr (mapcar pack (split (chop *Handler) ".")))
+      (let (Script (get-script-name *Aws_lambda_task_root *Handler)
+            Function (get-function-name *Handler)
             Temp (make-temp)
             Event_data (get-event-data (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/next") Temp)
-            Headers (parse-headers Temp) )
+            Headers (parse-headers (in Temp (till NIL T))) )
 
          (setq *Request_id (get-request-id Headers))
 
@@ -24,6 +24,6 @@
             (send-response (pack "http://" *Aws_lambda_runtime_api "/2018-06-01/runtime/invocation/" *Request_id "/response")
                (eval-function Function Event_data Headers) ) ) ) ) )
 
-(init)
+(init-runtime)
 (main)
 (bye)
