@@ -6,8 +6,7 @@ RUN cd / && git clone --depth 1 https://github.com/aw/picolisp-json && git clone
 RUN mkdir picoLisp/json picoLisp/awscurl
 RUN cp picolisp-json/json.l picolisp-json/LICENSE picoLisp/json/
 RUN cp picolisp-awscurl/libawscurl.l picolisp-awscurl/LICENSE picoLisp/awscurl/
-COPY bootstrap /
-COPY runtime.l /picoLisp/
-RUN zip -r /picolisp.zip picoLisp/bin picoLisp/lib picoLisp/json picoLisp/awscurl picoLisp/*.l picoLisp/COPYING picoLisp/runtime.l bootstrap
+ARG uid
+RUN chown -R ${uid} /picoLisp
 
-ENTRYPOINT ["mv", "/picolisp.zip", "/build/"]
+ENTRYPOINT ["mv", "/picoLisp", "/build/"]
