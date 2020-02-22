@@ -68,7 +68,7 @@
          (load (get-script-name *Lambda_task_root *Handler))
          (eval-function (get-function-name *Handler) (make-mock-event-data)
             (make-mock-headers) ) )
-      (make-mock-event-data)
+      (json-encode (make-mock-event-data))
       "Example function returns the event data as-is" ) )
 
 (de test-runtime ()
