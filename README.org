@@ -15,7 +15,7 @@ Thanks to PicoLisp's small size and its speed, function invocation is nearly ins
   - [ ] Clean up code
   - [ ] Better documentation
   - [ ] Use Github actions to package the runtime
-  - [ ] Local testing with lambci or something
+  - [ ] More local testing of the stateful functions
 
 * Requirements
 
@@ -59,8 +59,4 @@ Any kind of data can be returned by the handler, though it's recommended to (jso
   - The handler is defined in the format <filename>.<function name>. The bootstrap parses this string, and uses the `load` function to load this file
   - Then the function is evaluated using `(eval (append (str Function) (quote Event_data) (quote Headers)))`, and the result is POSTed to the runtime API with curl
   - In case of errors, *Err is executed, which will POST the error message to trhe runtime API
-  - There's a `(loop)` around the above process. I'm not exactly sure why but it probably has to do with functions running in a loop and handling multiple events in a row, rather than launching a new container/process for each invocation. Without the loop, the function encounters errors, and without the POSTs in case of error or success, the function loops and processes the same Event_data until the max duration is reached as definedin the Lambda's timeout setting.
-
-* Thanks
-
-  Thanks Alex Williams for the tips and discussions about PicoLisp, and for coming to the conclusion to NOT implement my non-enhancement to awscurl.
+  - There's a `(loop)` around the above process. I'm not exactly sure why but it probably has to do with functions running in a loop and handling multiple events in a row, rather than launching a new container/process for each invocation. Without the loop, the function encounters errors, and without the POSTs in case of error or success, the function loops and processes the same Event_data until the max duration is reached as defined in the Lambda's timeout setting.
