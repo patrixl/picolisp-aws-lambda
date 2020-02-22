@@ -40,7 +40,7 @@
          (assert-equal
             (make-mock-event-data)
             (get-event-data (pack "http://" *Aws_lambda_runtime_api) Temp)
-            "Ensure event data is obtained and decoded" ) ) ) )
+            "Event data is obtained and decoded" ) ) ) )
 
 (de test-header-parsing ()
    (assert-equal (parse-headers (make-mock-raw-headers))
@@ -51,7 +51,7 @@
    (assert-equal
       (get-request-id (make-mock-headers))
       "1234567890abcdef"
-      "Ensure request ID is properly parsed") )
+      "Request ID is properly parsed") )
 
 (de test-get-script ()
    (assert-equal (get-script-name *Lambda_task_root *Handler)
@@ -60,7 +60,7 @@
 
 (de test-get-function ()
    (assert-equal (get-function-name *Handler) "main"
-      "Ensure function name is properly parsed") )
+      "Function name is properly parsed") )
 
 (de test-eval-function ()
    (assert-equal
@@ -69,7 +69,7 @@
          (eval-function (get-function-name *Handler) (make-mock-event-data)
             (make-mock-headers) ) )
       (make-mock-event-data)
-      "Ensure example function returns the event data as-is" ) )
+      "Example function returns the event data as-is" ) )
 
 (de test-runtime ()
    (init-test-sys)
@@ -80,4 +80,7 @@
       '(test-request-id-parsing)
       '(test-get-script)
       '(test-get-function)
-      '(test-eval-function) ) )
+      '(test-eval-function) )
+
+   (prinl "^J PicoLisp Runtime for AWS Lambda ^J")
+   (report) )
