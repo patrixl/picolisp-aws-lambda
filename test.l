@@ -19,9 +19,9 @@
 
 # Mock data
 (de make-mock-headers ()
-   '(("Lambda-Runtime-Aws-Request-Id" "1234567890abcdef")
-     ("Key1" "Value1")
-     ("Key2" "Value2")) )
+   '(("Lambda-Runtime-Aws-Request-Id" . "1234567890abcdef")
+     ("Key1" . "Value1")
+     ("Key2" . "Value2")) )
 
 (de make-mock-raw-headers ()
    "Lambda-Runtime-Aws-Request-Id: 1234567890abcdef^JKey1: Value1^JKey2: Value2" )

@@ -40,7 +40,9 @@
          (till NIL T) ) ) )
 
 (de parse-headers (Raw)
-   (mapcar '((L) (mapcar '((E) (pack (clip E))) (split L ":") ) )
+   (mapcar '((L)
+             (let Pair (mapcar '((E) (pack (clip E))) (split L ":"))
+                (cons (car Pair) (cadr Pair)) ) )
       (split (chop Raw) "^J") ) )
 
 (de get-script-name (Root Handler)
@@ -57,4 +59,4 @@
       (till NIL T) ) )
 
 (de get-request-id (Headers)
-   (cadr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)) )
+   (cdr (assoc "Lambda-Runtime-Aws-Request-Id" Headers)) )

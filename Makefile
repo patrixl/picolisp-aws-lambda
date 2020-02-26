@@ -14,7 +14,7 @@ AWS_DIR = $(PIL_MODULE_DIR)/picolisp-awscurl/HEAD
 
 .PHONY: all
 
-all: check
+all: check runtime
 
 $(TEST_DIR):
 		mkdir -p $(TEST_DIR) && \
@@ -26,3 +26,6 @@ check: $(TEST_DIR) run-tests
 
 run-tests:
 		pil ./test.l -test-runtime -bye
+
+runtime:
+		./scripts/package.sh
