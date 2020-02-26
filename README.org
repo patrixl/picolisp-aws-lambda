@@ -4,9 +4,9 @@
 
 * About
 
-Creates a custom runtime for AWS Lambda allowing you to run PicoLisp functions in AWS Lambda. For convenience, aw's picolisp-json and picolisp-awscurl are included.
+Creates a custom runtime for AWS Lambda allowing you to run PicoLisp functions in AWS Lambda. For convenience, aw's ~picolisp-json~ and ~picolisp-awscurl~ are included.
 
-The same variables used to configure libawscurl.l are also used in the runtime.
+The same variables used to configure ~libawscurl.l~ are also used in the runtime.
 
 Thanks to PicoLisp's small size and its speed, function invocation is nearly instant.
 
@@ -23,6 +23,7 @@ Thanks to PicoLisp's small size and its speed, function invocation is nearly ins
   - git
   - Picolisp (tested with 19.12)
   - An AWS account
+  - jq (for the ~publish.sh~ script)
 
 * Usage
 
@@ -31,7 +32,7 @@ Thanks to PicoLisp's small size and its speed, function invocation is nearly ins
   - Create a new Lambda function, choosing the "custom runtime" option
   - Add a new layer and select the new layer
   - Write/upload PicoLisp code! Make sure your scripts have a .l extension
-  - For the handler, the format is: <filename>.<function name>
+  - For the handler, the format is: ~<filename>.<function name>~
 
 The Handler function takes 2 arguments: Event_Data and Headers. They are both alists.
 
@@ -40,23 +41,23 @@ Any kind of data can be returned by the handler, though it's recommended to (jso
 * Building
 
 ** With Docker
-   - Check out `scripts/package.sh`
+   - Check out ~scripts/package.sh~
 
 ** Manually
    - Download picoLisp source code and build it
    - copy runtime.l to the picoLisp folder
    - copy bootstrap to the parent folder
-   - get json.l and libawscurl.l and copy them to folders of the same name
-     - e.g.: `cp path/to/json.l picoLisp/json/json.l`
-   - `zip -r picolisp.zip picoLisp/*.l picoLisp/bin picoLisp/lib/*.l picoLisp/json picoLisp/awscurl bootstrap`
+   - get ~json.l~ and ~libawscurl.l~ and copy them to folders of the same name
+     - e.g.: ~cp path/to/json.l picoLisp/json/json.l~
+   - ~zip -r picolisp.zip picoLisp/*.l picoLisp/bin picoLisp/lib/*.l picoLisp/json picoLisp/awscurl bootstrap~
 
 * How it works
 
   - The picolisp.zip file is unpacked to /opt
-  - AWS Lambda will find the `/opt/bootstrap` and execute it
-  - bootstrap will find the picolisp interpreter in `/opt/picoLisp/bin/picolisp`, load the libraries and start initializing the environment
+  - AWS Lambda will find the ~/opt/bootstrap~ and execute it
+  - bootstrap will find the picolisp interpreter in ~/opt/picoLisp/bin/picolisp~, load the libraries and start initializing the environment
   - curl is used to obtain the event data and headers, which are parsed and turned into alists
-  - The handler is defined in the format <filename>.<function name>. The bootstrap parses this string, and uses the `load` function to load this file
-  - Then the function is evaluated using `(eval (append (str Function) (quote Event_data) (quote Headers)))`, and the result is POSTed to the runtime API with curl
+  - The handler is defined in the format ~<filename>.<function name>~. The bootstrap parses this string, and uses the ~load~ function to load this file
+  - Then the function is evaluated using ~(eval (append (str Function) (quote Event_data) (quote Headers)))~, and the result is POSTed to the runtime API with curl
   - In case of errors, *Err is executed, which will POST the error message to trhe runtime API
-  - There's a `(loop)` around the above process. I'm not exactly sure why but it probably has to do with functions running in a loop and handling multiple events in a row, rather than launching a new container/process for each invocation. Without the loop, the function encounters errors, and without the POSTs in case of error or success, the function loops and processes the same Event_data until the max duration is reached as defined in the Lambda's timeout setting.
+  - There's a ~(loop)~ around the above process. I'm not exactly sure why but it probably has to do with functions running in a loop and handling multiple events in a row, rather than launching a new container/process for each invocation. Without the loop, the function encounters errors, and without the POSTs in case of error or success, the function loops and processes the same Event_data until the max duration is reached as defined in the Lambda's timeout setting.
