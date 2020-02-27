@@ -1,5 +1,10 @@
 #!/opt/picoLisp/bin/picolisp /opt/picoLisp/lib.l
 
+# Local variables:
+# mode: picolisp
+# eval: (paredit-mode +1)
+# End:
+
 (load "@lib/misc.l" "@lib/http.l" "@json/json.l" "@awscurl/libawscurl.l" "@runtime.l")
 
 # When an error occurs, print it out and notify the runtime API
